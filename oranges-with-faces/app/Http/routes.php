@@ -15,13 +15,13 @@ $app->get('/', function () use ($app) {
     return $app->welcome();
 });
 
-$app->post('/charge', function () use($app) {
+$app->post('/order', function (Request $request) use($app) {
     $stripeKey = env('STRIPE_KEY');
     $stripeSecret = env('STRIPE_SECRET');
 
     \Stripe\Stripe::setApiKey($stripeSecret);
 
-    $token = $_POST['stripeToken'];
+    $token = $request->input('stripeToken');
 
     $validateShipping = Validator::make(data, rules, messages, customAttributes);
     if($validator->fails()){
@@ -29,28 +29,35 @@ $app->post('/charge', function () use($app) {
     }
 
     $charge = \Stripe\Charge::create(array(
-        "amount" => 1000,
-        "currency" => "gbp",
+        "amount" => Order::COST,
+        "currency" => Order::CURRENCY,
         "source" => $token,
-        "description" => "Example charge"
+        "description" => "An orange with a face"
     ));
 
     Order::create([
-        'charge_id'          => $test,
-        'customer_id'        => $test,
-        'billing_name'       => $test,
-        'billing_address_1'  => $test,
-        'billing_city'       => $test,
-        'billing_state'      => $test,
-        'billing_country'    => $test,
-        'billing_zip'        => $test,
-        'shipping_name'      => $test,
-        'shipping_address_1' => $test,
-        'shipping_city'      => $test,
-        'shipping_state'     => $test,
-        'shipping_country'   => $test,
-        'shipping_zip'       => $test,
-        'total_cost'         => $test
+        'charge_id'          => $charge->id,
+        'customer_id'        => $charge->customer,
+        'customer_email'     => $request->input('stripeEmail'),
+        'billing_name'       => $request->input('stripeBillingName'),
+        'billing_address_1'  => $request->input('stripeBillingAddressLine1'),
+        'billing_city'       => $request->input('stripeBillingAddressCity'),
+        'billing_state'      => $request->input('stripeBillingAddressState'),
+        'billing_country'    => $request->input('stripeBillingAddressCountry'),
+        'billing_zip'        => $request->input('stripeBillingAddressZip'),
+        'shipping_name'      => $request->input('stripeShippingName'),
+        'shipping_address_1' => $request->input('stripeShippingAddressLine1'),
+        'shipping_city'      => $request->input('stripeShippingAddressCity'),
+        'shipping_state'     => $request->input('stripeShippingAddressState'),
+        'shipping_country'   => $request->input('stripeShippingAddressCountry'),
+        'shipping_zip'       => $request->input('stripeShippingAddressZip'),
+        'total_cost'         => $charge->amount,
+        'currency'           => $charge->currency,
+        'status'             => Order::STATUS_CREATED
     ]);
     return $app->welcome();
+});
+
+$app->get('/admin', function () use ($app) {
+
 });
