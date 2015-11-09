@@ -11,6 +11,6 @@
 |
 */
 
-$app->get('/', 'Controller@getIndex');
-$app->post('/order', 'Controller@postOrder');
-$app->get('/admin', 'Controller@getAdmin');
+$app->get('/', ['uses' => 'Controller@getIndex']);
+$app->post('/order', ['uses' => 'Controller@postOrder']);
+$app->get('/admin', ['uses' => 'Controller@getAdmin']);
