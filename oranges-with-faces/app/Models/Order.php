@@ -10,7 +10,6 @@ class Order extends Model
 
     const STATUS_CREATED = 'created';
     const STATUS_SENT = 'sent';
-    const STATUS_RECEIVED = 'received';
 
     public $timestamps = true;
 
@@ -18,18 +17,12 @@ class Order extends Model
         'charge_id',
         'customer_id',
         'customer_email',
-        'billing_name',
-        'billing_address_1',
-        'billing_city',
-        'billing_state',
-        'billing_country',
-        'billing_zip',
         'shipping_name',
         'shipping_address_1',
+        'shipping_address_2',
         'shipping_city',
-        'shipping_state',
-        'shipping_country',
-        'shipping_zip',
+        'shipping_county',
+        'shipping_post_code',
         'total_cost',
         'currency',
         'status'
