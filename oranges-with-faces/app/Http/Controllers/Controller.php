@@ -10,6 +10,7 @@ use Mail;
 use Laravel\Lumen\Routing\Controller as BaseController;
 use App\Models\Order;
 use App\Models\ValueObjects\Order as OrderValueObject;
+use Stripe\Error\Card as CardError;
 
 class Controller extends BaseController
 {
@@ -28,7 +29,7 @@ class Controller extends BaseController
             $validateShipping = Validator::make($orderData->getEloquentData(), $orderData->getValidationRules());
 
             if($validator->fails()){
-                throw new Exception();
+                throw new Exception($validator->errors());
             }
 
             $charge = StripeCharge::create([
@@ -54,6 +55,8 @@ class Controller extends BaseController
             });
 
             return response()->json(['success' => true]);
+        } catch(CardError $sce) {
+            return response()->json(['cardError' => $sce->getMessage()], 401);
         } catch (Exception $e) {
             return response()->json(['general' => [$e->getMessage()]], 500);
         }
@@ -66,6 +69,7 @@ class Controller extends BaseController
             $newStatus = $request->input('status');
             if($newStatus == Order::STATUS_SENT) {
                 $order->status = Order::STATUS_SENT;
+                $order->save();
                 Mail::send('emails.dispatched', ['order' => $order], function ($m) use ($order) {
                     $m->to($order->customer_email)->subject('Your Orange has been sent!');
                 });
