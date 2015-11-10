@@ -46,11 +46,11 @@ class Controller extends BaseController
             $orderData['currency'] = $charge->currency;
             $order = Order::create($orderData);
 
-            Mail::send('emails.order', ['order' => $order], function ($m) use ($order) {
+            Mail::send('emails.customer.order', ['order' => $order], function ($m) use ($order) {
                 $m->to($order->customer_email)->subject('Thanks for Buying an Orange with a Face!');
             });
 
-            Mail::send('emails.neworder', ['order' => $order], function ($m) use ($order) {
+            Mail::send('emails.admin.neworder', ['order' => $order], function ($m) use ($order) {
                 $m->to(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'))->subject('New Order!');
             });
 
@@ -70,7 +70,7 @@ class Controller extends BaseController
             if($newStatus == Order::STATUS_SENT) {
                 $order->status = Order::STATUS_SENT;
                 $order->save();
-                Mail::send('emails.dispatched', ['order' => $order], function ($m) use ($order) {
+                Mail::send('emails.customer.dispatched', ['order' => $order], function ($m) use ($order) {
                     $m->to($order->customer_email)->subject('Your Orange has been sent!');
                 });
             } else {
