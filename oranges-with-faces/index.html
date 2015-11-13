@@ -67,37 +67,3 @@
       </form>
     </div><!-- /.col-lg-12 -->
 </div><!-- /.row -->
-
-<script>
-  var pCodeRegex = /^(([gG][iI][rR] {0,}0[aA]{2})|((([A-PR-UWYZ][A-HK-Y]?[0-9][0-9]?)|(([A-PR-UWYZ][0-9][A-HJKSTUW])|([A-PR-UWYZ][a-hk-yA-HK-Y][0-9][ABEHMNPRV-Y]))) {0,}[0-9][ABD-HJLNP-UW-Z]{2}))$/i
-
-  var handler = StripeCheckout.configure({
-    key: 'pk_test_XzVtgWma4WvkoIlvFH3XBQRJ',
-    image: 'http://orangeswithfaces.com/img/logo.png',
-    locale: 'auto',
-    token: function(token) {
-        $('#stripeToken').val(token.id);
-        $('#customerEmail').val(token.email);
-        console.log(token);
-    }
-  });
-
-  // Close Checkout on page navigation
-  $(window).on('popstate', function() {
-    handler.close();
-  });
-
-  $('#paymentForm').submit(function(){ //listen for submit event
-    handler.open({
-      name: 'Oranges with Faces',
-      description: "It's an Orange with a face!",
-      amount: 1000,
-      currency: 'gbp'
-    });
-
-    return false;
-  });
-</script>
-
-
-

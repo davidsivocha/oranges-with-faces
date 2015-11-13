@@ -9,7 +9,7 @@ use Validator;
 use Mail;
 use Laravel\Lumen\Routing\Controller as BaseController;
 use App\Models\Order;
-use App\Models\ValueObjects\Order as OrderValueObject;
+use App\ValueObjects\Order as OrderValueObject;
 use Stripe\Error\Card as CardError;
 
 class Controller extends BaseController
@@ -26,10 +26,10 @@ class Controller extends BaseController
             Stripe::setApiKey($stripeSecret);
             $orderData = new OrderValueObject($request->all());
 
-            $validateShipping = Validator::make($orderData->getEloquentData(), $orderData->getValidationRules());
+            $validateShipping = Validator::make($orderData->getEloquentData(), $orderData->getValidationRules(), $orderData->getValidationMessages());
 
-            if($validator->fails()){
-                throw new Exception($validator->errors());
+            if($validateShipping->fails()){
+                throw new Exception($validateShipping->errors());
             }
 
             $charge = StripeCharge::create([
