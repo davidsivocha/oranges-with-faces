@@ -22,32 +22,31 @@ class Controller extends BaseController
     public function postOrder(Request $request)
     {
         try {
-            $stripeSecret = env('STRIPE_SECRET');
-            Stripe::setApiKey($stripeSecret);
             $orderData = new OrderValueObject($request->all());
-
-            $validateShipping = Validator::make($orderData->getEloquentData(), $orderData->getValidationRules(), $orderData->getValidationMessages());
+            $validateShipping = Validator::make($orderData->getAllData(), $orderData->getValidationRules(), $orderData->getValidationMessages());
 
             if($validateShipping->fails()){
                 throw new Exception($validateShipping->errors());
             }
 
+            Stripe::setApiKey(env('STRIPE_SECRET'));
             $charge = StripeCharge::create([
-                "amount"        => Order::COST,
-                "currency"      => Order::CURRENCY,
-                "source"        => $orderData->getToken(),
-                "description"   => "An orange with a face"
+                "amount"               => Order::COST,
+                "currency"             => Order::CURRENCY,
+                "source"               => $orderData->getToken(),
+                "description"          => "An orange with a face",
+                "receipt_email"        => $orderData->getEmail(),
+                "statement_descriptor" => "OrangesFaces"
             ]);
 
             $orderData = $orderData->getEloquentData();
-            $orderData['charge_id'] = $charge->id;
-            $orderData['customer_id'] = $charge->customer;
-            $orderData['total_cost'] = $charge->amount;
-            $orderData['currency'] = $charge->currency;
+            $orderData['charge_id']   = $charge->id;
+            $orderData['total_cost']  = $charge->amount;
+            $orderData['currency']    = $charge->currency;
             $order = Order::create($orderData);
 
             Mail::send('emails.customer.order', ['order' => $order], function ($m) use ($order) {
-                $m->to($order->customer_email)->subject('Thanks for Buying an Orange with a Face!');
+                $m->to($order->customer_email, $order->customer_name)->subject('Thanks for Buying an Orange with a Face!');
             });
 
             Mail::send('emails.admin.neworder', ['order' => $order], function ($m) use ($order) {
@@ -56,10 +55,21 @@ class Controller extends BaseController
 
             return response()->json(['success' => true]);
         } catch(CardError $sce) {
-            return response()->json(['cardError' => $sce->getMessage()], 401);
+            return response()->json(['error' => $sce->getMessage()], 401);
         } catch (Exception $e) {
-            return response()->json(['general' => [$e->getMessage()]], 500);
+            return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+    public function postContact(Request $request)
+    {
+        $contact = $request->all();
+
+        Mail::send('emails.admin.contact', ['contact' => $contact], function ($m) use ($contact) {
+            $m->to(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'))->subject('Contact Message');
+        });
+
+        return response()->json(['success' => true]);
     }
 
     public function postOrderStatus(Request $request, $id)

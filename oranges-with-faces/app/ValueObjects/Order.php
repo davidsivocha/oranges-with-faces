@@ -8,6 +8,7 @@ class Order
 {
     protected $token;
     protected $customer_email;
+    protected $customer_name;
     protected $shipping_name;
     protected $shipping_address_1;
     protected $shipping_address_2;
@@ -18,22 +19,39 @@ class Order
 
     public function __construct($data)
     {
-        $this->token = array_key_exists('stripeToken', $data) ? $data['stripeToken'] : null;
-        $this->customer_email = array_key_exists('customerEmail', $data) ? $data['customerEmail'] : null;
-        $this->shipping_name = array_key_exists('shippingName', $data) ? $data['shippingName'] : null;
-        $this->shipping_address_1 = array_key_exists('shippingAddress1', $data) ? $data['shippingAddress1'] : null;
-        $this->shipping_address_2 = array_key_exists('shippingAddress2', $data) ? $data['shippingAddress2'] : null;
-        $this->shipping_city = array_key_exists('shippingCity', $data) ? $data['shippingCity'] : null;
-        $this->shipping_county = array_key_exists('shippingCounty', $data) ? $data['shippingCounty'] : null;
-        $this->shipping_post_code = array_key_exists('shippingPostCode', $data) ? $data['shippingPostCode'] : null;
-        $this->status = OrderModel::STATUS_CREATED;
+        $this->token              = array_key_exists('token', $data) ? $data['token'] : null;
+        $this->customer_email     = array_key_exists('emailAddress', $data) ? $data['emailAddress'] : null;
+        $this->customer_name      = array_key_exists('buyerName', $data) ? $data['buyerName'] : null;
+        $this->shipping_name      = array_key_exists('victimName', $data) ? $data['victimName'] : null;
+        $this->shipping_address_1 = array_key_exists('address1', $data) ? $data['address1'] : null;
+        $this->shipping_address_2 = array_key_exists('address2', $data) ? $data['address2'] : null;
+        $this->shipping_city      = array_key_exists('city', $data) ? $data['city'] : null;
+        $this->shipping_county    = array_key_exists('county', $data) ? $data['county'] : null;
+        $this->shipping_post_code = array_key_exists('postCode', $data) ? $data['postCode'] : null;
+        $this->status             = OrderModel::STATUS_CREATED;
     }
 
     public function getEloquentData()
     {
         return [
+            'customer_email'        => $this->customer_email,
+            'customer_name'         => $this->customer_name,
+            'shipping_name'         => $this->shipping_name,
+            'shipping_address_1'    => $this->shipping_address_1,
+            'shipping_address_2'    => $this->shipping_address_2,
+            'shipping_city'         => $this->shipping_city,
+            'shipping_county'       => $this->shipping_county,
+            'shipping_post_code'    => $this->shipping_post_code,
+            'status'                => $this->status
+        ];
+    }
+
+    public function getAllData()
+    {
+        return [
             'token'                 => $this->token,
             'customer_email'        => $this->customer_email,
+            'customer_name'         => $this->customer_name,
             'shipping_name'         => $this->shipping_name,
             'shipping_address_1'    => $this->shipping_address_1,
             'shipping_address_2'    => $this->shipping_address_2,
@@ -49,6 +67,11 @@ class Order
         return $this->token;
     }
 
+    public function getEmail()
+    {
+        return $this->customer_email;
+    }
+
     public function getValidationRules()
     {
         return [
@@ -61,6 +84,11 @@ class Order
                 'required',
                 'string',
                 'email',
+                'max:255'
+            ],
+            'customer_name'         => [
+                'required',
+                'string',
                 'max:255'
             ],
             'shipping_name'         => [
@@ -105,6 +133,9 @@ class Order
             'customer_email.string'         => "The email address should be a string",
             'customer_email.email'          => "It looks like you've given us an invalid email",
             'customer_email.max'            => "The email should be less than 255 characters long",
+            'customer_name.required'        => "You need to enter your name",
+            'customer_name.string'          => "Your name should be a string",
+            'customer_name.max'             => "Your name should be less than 255 characters long",
             'shipping_name.required'        => "You need to enter the name of the person who you're sending the orange to",
             'shipping_name.string'          => "The persons name should be a string",
             'shipping_name.max'             => "The persons name shouldn't be longer than 255 characters",

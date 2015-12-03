@@ -13,4 +13,4 @@
 
 $app->get('/', ['uses' => 'Controller@getIndex']);
 $app->post('/order', ['uses' => 'Controller@postOrder']);
-$app->get('/admin', ['uses' => 'Controller@getAdmin']);
+$app->post('/contact', ['uses' => 'Controller@postContact']);
