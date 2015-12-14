@@ -72,22 +72,22 @@ class Controller extends BaseController
         return response()->json(['success' => true]);
     }
 
-    public function postOrderStatus(Request $request, $id)
+    public function markDispatched($id)
     {
-        try {
-            $order = Order::findOrFail($id);
-            $newStatus = $request->input('status');
-            if($newStatus == Order::STATUS_SENT) {
-                $order->status = Order::STATUS_SENT;
-                $order->save();
-                Mail::send('emails.customer.dispatched', ['order' => $order], function ($m) use ($order) {
-                    $m->to($order->customer_email)->subject('Your Orange has been sent!');
-                });
-            } else {
-                throw new Exception("Unknown Order Status");
-            }
-        } catch (Exception $e) {
-            return response()->json(['general' => [$e->getMessage()]], 500);
+        $order = Order::findOrFail($id);
+        if($order->status == 'dispatched') {
+            return 'Order already marked as Dispatched';
+        } else if ($order->status == 'canceled') {
+            return "Order was marked as canceled and can't be dispatched";
         }
+
+        $order->status = 'dispatched';
+        $order->save();
+
+        Mail::send('emails.customer.dispatched', ['order' => $order], function ($m) use ($order) {
+            $m->to($order->customer_email, $order->customer_name)->subject('Your orange has been Dispatched');
+        });
+
+        return 'Marked as Dispatched';
     }
 }

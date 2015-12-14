@@ -14,3 +14,4 @@
 $app->get('/', ['uses' => 'Controller@getIndex']);
 $app->post('/order', ['uses' => 'Controller@postOrder']);
 $app->post('/contact', ['uses' => 'Controller@postContact']);
+$app->get('/order/{id}', ['uses' => 'Controller@markDispatched']);
